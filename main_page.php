@@ -203,9 +203,9 @@ echo <<<HTML
         </label><br><br>
         <label>Select Encryption Algorithm:<br>
             <select name="encryption_algorithm">
-                <option value="RC4">Algorithm 1</option>
-                <option value="DoubleTranspose">Algorithm 2</option>
-                <option value="SimpleSub">Algorithm 3</option>
+                <option value="RC4">RC4</option>
+                <option value="DoubleTranspose">Double Transposition</option>
+                <option value="SimpleSub">Simple Substitution</option>
             </select>
         </label><br><br>
         <input type="submit" name="encrypt_submit" value="Encrypt">
