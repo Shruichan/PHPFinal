@@ -12,7 +12,7 @@ function displayError() {
 }
 
 //susbstitution cypher via caesar cipher
-function substiution($crypt, $shift, $text){
+function encryptWithSimpleSub($crypt, $shift, $text){
     //If crypt is 0 then we are encrypting else we are decrypting 
     if($crypt = 0)
     {
@@ -24,7 +24,7 @@ function substiution($crypt, $shift, $text){
 
 }
 
-function transposition($crypt ,$keyword1, $keyword2, $text){
+function encryptWithDoubleTranspose($crypt ,$keyword1, $keyword2, $text){
     //If crypt is 0 then we are encrypting else we are decrypting 
     if($crypt = 0)
     {
@@ -35,7 +35,7 @@ function transposition($crypt ,$keyword1, $keyword2, $text){
     }
 }
 
-funciton rc4($crypt, $key, $text){
+funciton encryptWithRC4($crypt, $key, $text){
     //If crypt is 0 then we are encrypting else we are decrypting 
     if($crypt = 0)
     {
@@ -45,4 +45,5 @@ funciton rc4($crypt, $key, $text){
         
     }
 }
+
 ?>
