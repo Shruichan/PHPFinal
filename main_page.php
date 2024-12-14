@@ -92,7 +92,7 @@ if (isset($_POST['encrypt_submit'])) {
             $filename = preg_replace("/[^a-zA-Z0-9._-]/", "_", $filename);
             $filename = sanitize($filename)
             // Get the file contents
-            $file_contents = file_get_contents(sanitize($_FILES['file_data']['tmp_name']));
+            $file_contents = file_get_contents($_FILES['file_data']['tmp_name']);
             // Sanitize file contents
             $file_contents = sanitize($file_contents);
 
