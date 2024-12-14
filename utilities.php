@@ -35,7 +35,7 @@ function encryptWithDoubleTranspose($crypt ,$keyword1, $keyword2, $text){
     }
 }
 
-funciton encryptWithRC4($crypt, $key, $text){
+function encryptWithRC4($crypt, $key, $text){
     //If crypt is 0 then we are encrypting else we are decrypting 
     if($crypt = 0)
     {
