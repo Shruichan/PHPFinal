@@ -1,7 +1,7 @@
 <?php
 session_start();
 require_once "login.php";
-require_once "utilities.php"
+require_once "utilities.php";
 $timeout_duration = 1800;
 
 /*----------------------------------------------------------Session_Validation---------------------------------------------------------------------------*/
