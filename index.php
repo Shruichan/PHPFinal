@@ -1,19 +1,7 @@
 <?php
 session_start();
 require_once "login.php";
-
-//these functions originally included in a utilities.php file, but copy and pasted here to make sure no issues with format
-function sanitize($data) {
-    $data = trim($data);
-    $data = stripslashes($data);
-    return htmlspecialchars($data, ENT_QUOTES, 'UTF-8');
-}
-
-function displayError() {
-    echo "An unexpected error occurred. Please try again later.";
-    exit();
-}
-
+require_once "utilities.php"
 
 
 try {
