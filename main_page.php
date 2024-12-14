@@ -2,7 +2,8 @@
 session_start();
 require_once "login.php";
 require_once "utilities.php";
-$timeout_duration = 1800;
+define('TIMEOUT_DURATION', 1800);
+
 
 /*----------------------------------------------------------Session_Validation---------------------------------------------------------------------------*/
 
@@ -32,7 +33,7 @@ if (!isset($_SESSION['user_agent_hash']) || $_SESSION['user_agent_hash'] !== has
 }
 
 //expire session after a bit of time
-if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) > $timeout_duration) {
+if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) > TIMEOUT_DURATION) {
     session_unset();
     session_destroy();
     header("Location: index.php");
@@ -66,32 +67,84 @@ if (isset($_POST['logout'])) {
 
 $query_results = ""; // var to store results
 
-if (isset($_POST['search'])) {
-    $student_name = sanitize($_POST['student_name']); // get student name and sanitize it
-    $student_id = sanitize($_POST['student_id']); // get student id and sanitize it
-    $student_id_last_two = (int) substr($student_id, -2); // get only the last 2 digits of the student id
+/*---------------------------------------encryption menus------------------------------*/
 
-    // check if any issues with student name or id this shouldnt happen because client side validation
-    if (empty($student_name) || !preg_match('/^[0-9]{9}$/', $student_id)) {
-        $query_results = "Invalid input. Make sure Student ID is 9 digits and name is not empty."; // store issue to results var
+if (isset($_POST['encrypt_submit'])) {
+    $encryption_algorithm = sanitize($_POST['encryption_algorithm']); //sanitize the input field 
+    $allowed_algorithms = ['RC4', 'DoubleTranspose', 'SimpleSub']; // change these to whatever we end up naming
+
+    // Make sure algorithm is valid (shouldnt really be needed as selection is a drop down menu)
+    if (!in_array($encryption_algorithm, $allowed_algorithms)) {
+        $query_results = "Invalid encryption algorithm selected.";
     } else {
-        // prep statement to get users advisor
-        $stmt = $conn->prepare("SELECT id, name, email, phone FROM advisors WHERE lower_bound <= ? AND upper_bound >= ?");
-        if ($stmt === false) {
-            displayError();
+        $original_data = "";
+        $filename = null;
+
+        // check if text box has data
+        if (!empty($_POST['text_data'])) {
+            $original_data = sanitize($_POST['text_data']);
         }
 
-        $stmt->bind_param("ii", $student_id_last_two, $student_id_last_two); // bind student id to statement
-        $stmt->execute();
-        $stmt->bind_result($adv_id, $adv_name, $adv_email, $adv_phone); // bind results to statement
-        if ($stmt->fetch()) { // if statement returned results add them to results var for display
-            $query_results = "Advisor: ".sanitize($adv_name)."<br>Email: ".sanitize($adv_email)."<br>ID: ".sanitize($adv_id)."<br>Phone: ".sanitize($adv_phone);
-        } else {
-            $query_results = "No advisor found for this Student ID."; // otherwise say no id found and let it be displayed later
+        // Check if file was uploaded
+        if (isset($_FILES['file_data']) && $_FILES['file_data']['error'] === UPLOAD_ERR_OK) {
+            // Sanitize file name
+            $filename = basename($_FILES['file_data']['name']);
+            $filename = preg_replace("/[^a-zA-Z0-9._-]/", "_", $filename);
+            $filename = sanitize($filename)
+            // Get the file contents
+            $file_contents = file_get_contents(sanitize($_FILES['file_data']['tmp_name']));
+            // Sanitize file contents
+            $file_contents = sanitize($file_contents);
+
+            // TODO flesh this out to make sure that its clear what we encrypt, and make sure one is provided
+            $original_data = !empty($file_contents) ? $file_contents : $original_data;
         }
-        $stmt->close();
+
+        if (empty($original_data)) {
+            $query_results = "No data provided to encrypt.";
+        } else {
+            // Encrypt the data based on chosen algorithm
+            switch ($encryption_algorithm) {
+                case 'RC4':
+                    $encrypted_data = encryptWithRC4($original_data);
+                    break;
+                case 'DoubleTranspose':
+                    $encrypted_data = encryptWithDoubleTranspose($original_data);
+                    break;
+                case 'SimpleSub':
+                    $encrypted_data = encryptWithSimpleSub($original_data);
+                    break;
+                default:
+                    $query_results = "Invalid encryption algorithm.";
+                    $encrypted_data = null;
+            }
+
+            if ($encrypted_data !== null) {
+                // Store results to db
+                $stmt = $conn->prepare("INSERT INTO encrypted_data (user_id, original_data, encrypted_data, algorithm, filename) VALUES (?, ?, ?, ?, ?)");
+                if ($stmt === false) {
+                    displayError();
+                }
+                $user_id = $_SESSION['user_id'];
+                $stmt->bind_param("issss", $user_id, $original_data, $encrypted_data, $encryption_algorithm, $filename);
+                if (!$stmt->execute()) { 
+                    displayError(); 
+                }
+                $stmt->close();
+                $inserted_id = $conn->insert_id;
+
+                // Display the data
+                $safe_encrypted_data = htmlspecialchars($encrypted_data, ENT_QUOTES, 'UTF-8');
+                $query_results = "Data encrypted and stored successfully.<br>
+                                  <strong>Encrypted Data:</strong><br>
+                                  <pre>{$safe_encrypted_data}</pre>";
+            }
+            //TODO make a new page that allows user to download previouse data that they have encrypted as we are storing it anyway
+        }
     }
 }
+
+/*---------------------------------------encryption menus------------------------------*/
 
 $conn->close();
 
@@ -133,18 +186,30 @@ echo <<<HTML
         
         return true; // return true and let us proceed otherwise
     }
+    //TODO make sure to integrate client side validation VERY IMPORTANT
     </script>
 
 </head>
 <body>
-    <h1>Welcome to the Advisor Lookup</h1>
-    <form method="post" onsubmit="return validateSearchForm(this);" novalidate>
-        <label>Student Name: <input type="text"  name="student_name" id="student_name" required></label><br>
-        <label>Student ID: <input type="text" name="student_id" id="student_id"  maxlength="9" required></label><br>
-        <input type="submit" name="search" value="Search Advisor">
-    </form>
-
+    <h1>Encryptotron9000</h1>
     <p>{$query_results}</p>
+    <form method="post" enctype="multipart/form-data">
+        <h2>Encrypt Your Data</h2>
+        <label>Enter text data (optional):<br>
+            <textarea name="text_data" rows="5" cols="40"></textarea>
+        </label><br><br>
+        <label>Or upload a file (optional):<br>
+            <input type="file" name="file_data">
+        </label><br><br>
+        <label>Select Encryption Algorithm:<br>
+            <select name="encryption_algorithm">
+                <option value="RC4">Algorithm 1</option>
+                <option value="DoubleTranspose">Algorithm 2</option>
+                <option value="SimpleSub">Algorithm 3</option>
+            </select>
+        </label><br><br>
+        <input type="submit" name="encrypt_submit" value="Encrypt">
+    </form>
 
     <form method="post">
         <input type="submit" name="logout" value="Log Out">

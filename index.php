@@ -69,7 +69,9 @@ if (isset($_POST['signup'])) {
     // check to see if there is a duplicate email or student id in database and error out / tell user if so
     $stmt = $conn->prepare("SELECT id FROM credentials WHERE email = ? OR student_id = ?");
     $stmt->bind_param("ss", $email, $student_id); // bind email and student id to statement
-    $stmt->execute();
+    if (!$stmt->execute()) { 
+        displayError(); 
+    }
     $stmt->store_result();
     if ($stmt->num_rows > 0) { // error out with non generic error if user already exists to let user know
         echo "Email or Student ID already exists.";
@@ -123,7 +125,9 @@ if (isset($_POST['login'])) { // check to see if login form was submitted
         }
 
         $stmt->bind_param("s", $student_id); // bind student id to statement
-        $stmt->execute();
+        if (!$stmt->execute()) { 
+            displayError();  
+        }
         $stmt->bind_result($user_id, $hashed_password); // bind output to statement
         if ($stmt->fetch()) { //check if statement worked and password is correct
             if (password_verify($password, $hashed_password)) { // take password and compare it with old password
