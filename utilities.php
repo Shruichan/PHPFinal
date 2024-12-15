@@ -17,7 +17,7 @@ function encryptWithSimpleSub($crypt, $shift, $text){
     $original = str_split($text);
     //Create a dictionary based on how many shifts given by the user
     $dictionary = array_merge(range('a', 'z'), range('A', 'Z'));
-    $numDict = range(0, 9);
+    $numDict = range('0', '9');
     //If crypt is 0 then we are encrypting else we are decrypting 
     if($crypt == 0)
     {
