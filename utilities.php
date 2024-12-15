@@ -11,7 +11,6 @@ function displayError() {
     exit();
 }
 
-//susbstitution cypher via caesar cipher
 function encryptWithSimpleSub($crypt, $shift, $text){
     //If crypt is 0 then we are encrypting else we are decrypting 
     return('testing');
