@@ -165,9 +165,13 @@ function encryptWithRC4($key, $data) {
 
     //convert bytes back into binary and return them 
     $resultBinary = bytesToBinaryString($resultBytes);
-    return $resultBinary;
-
-    //todo maybe return both bytes and character output
+    return [
+        'binary' => $resultBinary,
+        'ascii' => $resultBytes, 
+        'hexadecimal' => bin2hex($resultBytes),
+        'octal' => implode('', array_map(function ($byte) { return decoct(bindec($byte)); }, str_split($resultBinary, 8))),
+        'decimal' => implode(' ', array_map(function ($byte) {return bindec($byte); }, str_split($resultBinary, 8)))
+    ];
 }
 
 ?>
