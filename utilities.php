@@ -1,5 +1,8 @@
 <?php
 
+//----------------------------Helper Functions----------------------------------------------------
+
+
 function sanitize($data) {
     $data = trim($data);
     $data = stripslashes($data);
@@ -12,6 +15,11 @@ function displayError() {
 }
 
 
+
+//----------------------------Simple Substitution Implementation-----------------------------------
+
+
+
 //susbstitution cypher via caesar cipher
 function encryptWithSimpleSub($crypt, $shift, $text){
     $original = str_split($text);
@@ -20,11 +28,11 @@ function encryptWithSimpleSub($crypt, $shift, $text){
     $dictionary = array_merge(range('a', 'z'), range('A', 'Z'));
     $num = range('0', '9');
     $numDict = range('0', '9');
-    //If encrypt or decrypt
-    if($crypt == "encrypt")
+
+    if($crypt == "encrypt") // check if we are encrypting or decrypting
     {
-        //shift the dictionary right by however many shifts
-        for($x = 0; $x < $shift; $x++){
+        // handling encryption case
+        for($x = 0; $x < $shift; $x++){ //shift the dictionary right by however many shifts
             array_unshift($dictionary, array_pop($dictionary));
             array_unshift($numDict, array_pop($numDict));
         }
@@ -58,6 +66,10 @@ function encryptWithSimpleSub($crypt, $shift, $text){
     }
     return implode($original);
 }
+
+
+//----------------------------Double Transposition Implementation-----------------------------------
+
 
 function encryptWithDoubleTranspose($crypt ,$keyword1, $keyword2, $text){
     //Make keywords into lowercase and an array and remove duplicate letters
