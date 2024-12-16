@@ -88,52 +88,73 @@ function encryptWithDoubleTranspose($crypt ,$keyword1, $keyword2, $text){
     //Make keywords into lowercase and an array and remove duplicate letters
     $k1 = array_unique(str_split(strtolower($keyword1)));
     $k2 = array_unique(str_split(strtolower($keyword2)));
+
+    // empty string to store the final result
     $result = "";
     //If crypt is 0 then we are encrypting else we are decrypting 
     if($crypt == "encrypt")
     {
-        $firstTranspose = transpose($k1, $text);
-        //echo "First T: $firstTranspose";
+        // do the first transposition using first keyword and original text
+        $firstTranspose = transpose($k1, $text); 
+        // do the second transposition using keyword 2 and result of first transposition
         $result = transpose($k2, $firstTranspose);
     }
     else{
+        // do the first reverse transposition using k2 and ciphertext
         $firstTranspose = reverseTranspose($k2, $text);
-        //echo "First U: $firstTranspose";
+        // do the second reverse transposition using k1 and the result of first reverse transposition
         $result = reverseTranspose($k1, $firstTranspose);
     }
-    return $result;
+    return $result; // return the result
 }
 
 function transpose($keyword, $text){
-    //Get the size of the grid and split text into array
-    $oldKey = $keyword;
-    sort($keyword);
+    $oldKey = $keyword; // store original order of keyword
+    sort($keyword); // sort keyword alphabetically to determine transposition order
+
+    // remove spaces from the text and split it into an array of characters 
     $original = str_split(str_replace(' ', '', $text));
+
+    // calculate number of rows we need for grid
     $rowCount = intdiv(count($original) + count($keyword) - 1 , count($keyword));
-    $result = [];
+    $result = []; // array to store grid rows after transposition
     //Begin placing text into a sorted grid
     $index = 0;
     for($i = 0; $i < $rowCount; $i++){
-        $temp = [];
+        $temp = []; // store one row of the grid
+        // fill row column by column using keyword order for positioning
         for($j = 0; $j < count($keyword); $j++){
+            // iff all characters from text place finalize current row
             if($index >= count($original)){
-                ksort($temp);
-                array_push($result, $temp);
+                ksort($temp); // sort row according to keyword column
+                array_push($result, $temp); // add row to the grid
                 break;
             }
+
+            // get column index for the character using keywords original order
             $keyOrder = array_search($oldKey[$j], $keyword, true);
+            
+            //place the character in column position that was calculated
             $temp[$keyOrder] = $original[$index];
+
+            // move to next character
             $index++;
         }
+
+        // stop filling rows if we are at the end of the text
         if($index >= count($original)) break;
+
+        // sort the row according to transposition order
         ksort($temp);
+
+        // add the row to the grid
         array_push($result, $temp);
     }
-    $index = 0;
+    $index = 0; // track the character positions to add apaces
     $newText = "";
     foreach ($result as $row) {
         foreach ($row as $element) {
-            $newText .= $element;  
+            $newText .= $element;  // add character to final result
             // Add a space every 5 letters
             if (($index + 1) % 5 == 0 && $index + 1 < count($original)) {
                 $newText .= ' ';
@@ -141,38 +162,50 @@ function transpose($keyword, $text){
             $index++;
         }
     }
-    return $newText;
+    return $newText; // return transposed text as a single string
 }
 
 function reverseTranspose($keyword, $text){
-    //Get the size of the grid and split text into array
-    $oldKey = $keyword;
-    sort($keyword);
-    $original = str_split(str_replace(' ', '', $text));
-    $rowCount = intdiv(count($original) + count($keyword) - 1 , count($keyword));
-    $result = [];
+    $oldKey = $keyword; // store original order of keyword
+    sort($keyword); // sort keyword alphabetically
+    $original = str_split(str_replace(' ', '', $text)); // remove spaces from text and split it into array of chars
+    $rowCount = intdiv(count($original) + count($keyword) - 1 , count($keyword)); // calculate num rows
+    $result = []; // array to store result of transposition
 
     //Begin placing text into a sorted grid
-    $index = 0;
+    $index = 0; // track current character position in text
     for($i = 0; $i < $rowCount; $i++){
-        $temp = [];
+        $temp = []; // remp array to store a row of the grid
+
+        // fill row column by column using keyword order for position
         for($j = 0; $j < count($keyword); $j++){
+            // if all characters have been placed finalize the row and exit
             if($index >= count($original)){
                 array_push($result, $temp);
                 break;
             }
+
+            //determine column index for the character using reverse of keywords order
             $keyOrder = array_search($keyword[$j], $oldKey, true);
+
+            // put charcter in calculated colum position
             $temp[$keyOrder] = $original[$index];
+
+            // move on to next character
             $index++;
         }
+
+        // stop filling rows if we get to the end of the text
         if($index >= count($original)) break;
+        // add the row to the grid
         array_push($result, $temp);
     }
-    $index = 0;
+
+    $index = 0; // track position to add spaces
     $newText = "";
     foreach ($result as $row) {
         foreach ($row as $element) {
-            $newText .= $element;  
+            $newText .= $element;  // add character to the final result
             // Add a space every 5 letters
             if (($index + 1) % 5 == 0 && $index + 1 < count($original)) {
                 $newText .= ' ';
@@ -180,8 +213,7 @@ function reverseTranspose($keyword, $text){
             $index++;
         }
     }
-    return $newText;
-
+    return $newText; // return reverse transposed text as a single string
 }
 
 //----------------------------RC4 Implementation-----------------------------------
