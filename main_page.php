@@ -73,6 +73,8 @@ if (isset($_POST['encrypt_submit'])) {
     $encryption_algorithm = sanitize($_POST['encryption_algorithm']); //sanitize the input field 
     $allowed_algorithms = ['RC4', 'DoubleTranspose', 'SimpleSub']; // change these to whatever we end up naming
 
+    $encrypt_decrypt = sanitize($_POST['encrypt_decrypt']); //Whether data is encrypted or decrypted
+
     // Make sure algorithm is valid (shouldnt really be needed as selection is a drop down menu)
     if (!in_array($encryption_algorithm, $allowed_algorithms)) {
         $query_results = "Invalid encryption algorithm selected.";
@@ -131,7 +133,7 @@ if (isset($_POST['encrypt_submit'])) {
             else{
 
             }
-            // Encrypt the data based on chosen algorithm
+            // Encrypt/Decrypt the data based on chosen algorithm
             switch ($encryption_algorithm) {
                 case 'RC4':
                     if (!empty($key) && isset($return_format)) {
@@ -142,11 +144,11 @@ if (isset($_POST['encrypt_submit'])) {
                     }
                     break;
                 case 'DoubleTranspose':
-                    $encrypted_data = encryptWithSimpleSub(1, "key1", "key2", $original_data);
+                    $encrypted_data = encryptWithSimpleSub($encrypt_decrypt, "key1", "key2", $original_data);
                     break;
                 case 'SimpleSub':
                     if(!empty($shift))
-                    $encrypted_data = encryptWithDoubleTranspose(0, $shift, $original_data);
+                    $encrypted_data = encryptWithDoubleTranspose($encrypt_decrypt, $shift, $original_data);
                     break;
                 default:
                     $query_results = "Invalid encryption algorithm.";
@@ -160,7 +162,13 @@ if (isset($_POST['encrypt_submit'])) {
                     displayError();
                 }
                 $user_id = $_SESSION['user_id'];
-                $stmt->bind_param("issss", $user_id, $original_data, $encrypted_data, $encryption_algorithm, $filename);
+                if($encrypt_decrypt === "encrypt")
+                {
+                    $stmt->bind_param("issss", $user_id, $original_data, $encrypted_data, $encryption_algorithm, $filename);
+                }
+                else{
+                    $stmt->bind_param("issss", $user_id, $encrypted_data, $original_data, $encryption_algorithm, $filename);
+                }
                 if (!$stmt->execute()) { 
                     displayError(); 
                 }
@@ -260,6 +268,12 @@ echo <<<HTML
                 <option value="SimpleSub">Simple Substitution</option>
             </select>
         </label><br><br>
+        <label>Select Encrypt or Decrypt:<br>
+            <select name="encrypt_decrypt">
+                <option value="encrypt">Encrypt</option>
+                <option value="decrypt">Decrypt</option>
+            </select>
+        </label><br><br>
         <div id="key_input" style="display:none;">
             <label>Enter RC4 Key:<br>
                 <input type="text" name="encryption_key" placeholder="Enter RC4 key">
@@ -283,8 +297,7 @@ echo <<<HTML
             </label><br><br>
         </div>
 
-        <input type="submit" name="encrypt_submit" value="Encrypt">
-        <input type="submit" name="decrypt_submit" value="Decrypt">
+        <input type="submit" name="encrypt_submit" value="Encrypt/Decrypt">
     </form>
 
     <form method="post">

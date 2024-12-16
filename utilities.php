@@ -20,8 +20,8 @@ function encryptWithSimpleSub($crypt, $shift, $text){
     $dictionary = array_merge(range('a', 'z'), range('A', 'Z'));
     $num = range('0', '9');
     $numDict = range('0', '9');
-    //If crypt is 0 then we are encrypting else we are decrypting 
-    if($crypt == 0)
+    //If encrypt or decrypt
+    if($crypt == "encrypt")
     {
         //shift the dictionary right by however many shifts
         for($x = 0; $x < $shift; $x++){
