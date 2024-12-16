@@ -162,13 +162,7 @@ if (isset($_POST['encrypt_submit'])) {
                     displayError();
                 }
                 $user_id = $_SESSION['user_id'];
-                if($encrypt_decrypt === "encrypt")
-                {
-                    $stmt->bind_param("issss", $user_id, $original_data, $encrypted_data, $encryption_algorithm, $filename);
-                }
-                else{
-                    $stmt->bind_param("issss", $user_id, $encrypted_data, $original_data, $encryption_algorithm, $filename);
-                }
+                $stmt->bind_param("issss", $user_id, $original_data, $encrypted_data, $encryption_algorithm, $filename);
                 if (!$stmt->execute()) { 
                     displayError(); 
                 }
