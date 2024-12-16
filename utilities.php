@@ -16,7 +16,9 @@ function displayError() {
 function encryptWithSimpleSub($crypt, $shift, $text){
     $original = str_split($text);
     //Create a dictionary based on how many shifts given by the user
+    $alph = array_merge(range('a', 'z'), range('A', 'Z'));
     $dictionary = array_merge(range('a', 'z'), range('A', 'Z'));
+    $num = range('0', '9');
     $numDict = range('0', '9');
     //If crypt is 0 then we are encrypting else we are decrypting 
     if($crypt == 0)
@@ -27,12 +29,12 @@ function encryptWithSimpleSub($crypt, $shift, $text){
             array_unshift($numDict, array_pop($numDict));
         }
         for($i = 0; $i < count($original); $i++){
-            if(in_array($original[$i], $dictionary)){
-                $index = array_search($original[$i], $dictionary);
+            if(in_array($original[$i], $alph)){
+                $index = array_search($original[$i], $alph);
                 $original[$i] = $dictionary[$index];
             }
             if(in_array($original[$i], $numDict)){
-                $index = array_search($original[$i], $numDict);
+                $index = array_search($original[$i], $num);
                 $original[$i] = $numDict[$index];
             }
         }
@@ -44,18 +46,17 @@ function encryptWithSimpleSub($crypt, $shift, $text){
             array_push($numDict, array_shift($numDict));
         }
         for($i = 0; $i < count($original); $i++){
-            if(in_array($original[$i], $dictionary)){
-                $index = array_search($original[$i], $dictionary);
+            if(in_array($original[$i], $alph)){
+                $index = array_search($original[$i], $alph);
                 $original[$i] = $dictionary[$index];
             }
-            if(in_array($original[$i], $numDict)){
-                $index = array_search($original[$i], $numDict);
+            if(in_array($original[$i], $num)){
+                $index = array_search($original[$i], $num);
                 $original[$i] = $numDict[$index];
             }
         }
     }
     return implode($original);
-
 }
 
 function encryptWithDoubleTranspose($crypt ,$keyword1, $keyword2, $text){
