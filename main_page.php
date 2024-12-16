@@ -103,10 +103,32 @@ if (isset($_POST['encrypt_submit'])) {
         if (empty($original_data)) {
             $query_results = "No data provided to encrypt.";
         } else {
+            if ($encryption_algorithm === 'RC4') {
+                if (empty($_POST['encryption_key'])) {
+                    $query_results = "RC4 algorithm requires a key.";
+                } else {
+                    $key = sanitize($_POST['encryption_key']);
+                }
+
+                if (!empty($key)) {
+                    $return_format = isset($_POST['return_format']) ? sanitize($_POST['return_format']) : 'binary';
+                    $allowed_formats = ['binary', 'ascii', 'hexadecimal', 'octal', 'decimal'];
+                    if (!in_array($return_format, $allowed_formats)) {
+                        $query_results = "Invalid return format selected for RC4.";
+                        $encrypted_data = null;
+                    }
+                }
+
+            }
             // Encrypt the data based on chosen algorithm
             switch ($encryption_algorithm) {
                 case 'RC4':
-                    $encrypted_data = encryptWithRC4("key", $original_data);
+                    if (!empty($key) && isset($return_format)) {
+                        $encrypted_array = encryptWithRC4($key, $original_data);
+                        $encrypted_data = $encrypted_array[$return_format];
+                    } else {
+                        $encrypted_data = null;
+                    }
                     break;
                 case 'DoubleTranspose':
                     $encrypted_data = encryptWithDoubleTranspose(1, 2, $original_data);
@@ -134,7 +156,7 @@ if (isset($_POST['encrypt_submit'])) {
                 $inserted_id = $conn->insert_id;
 
                 // Display the data
-                $safe_encrypted_data = htmlspecialchars($encrypted_data, ENT_QUOTES, 'UTF-8');
+                $safe_encrypted_data = sanitize($encrypted_data, ENT_QUOTES, 'UTF-8');
                 $query_results = "Data encrypted and stored successfully.<br>
                                   <strong>Encrypted Data:</strong><br>
                                   <pre>{$safe_encrypted_data}</pre>";
@@ -186,11 +208,24 @@ echo <<<HTML
         
         return true; // return true and let us proceed otherwise
     }
+
+    function toggleKeyInput() {
+        const algorithm = document.getElementById("encryption_algorithm").value;
+        const keyInput = document.getElementById("key_input");
+        const returnFormat = document.getElementById("return_format");
+        if (algorithm === "RC4") {
+            keyInput.style.display = "block";
+            returnFormat.style.display = "block";
+        } else {
+            keyInput.style.display = "none";
+            returnFormat.style.display = "none";
+        }
+    }
     //TODO make sure to integrate client side validation VERY IMPORTANT
     </script>
 
 </head>
-<body>
+<body onload="toggleKeyInput()">
     <h1>Encryptotron9000</h1>
     <p>{$query_results}</p>
     <form method="post" enctype="multipart/form-data">
@@ -202,12 +237,29 @@ echo <<<HTML
             <input type="file" name="file_data">
         </label><br><br>
         <label>Select Encryption Algorithm:<br>
-            <select name="encryption_algorithm">
+            <select name="encryption_algorithm" id="encryption_algorithm" onchange="toggleKeyInput()">
                 <option value="RC4">RC4</option>
                 <option value="DoubleTranspose">Double Transposition</option>
                 <option value="SimpleSub">Simple Substitution</option>
             </select>
         </label><br><br>
+        <div id="key_input" style="display:none;">
+            <label>Enter RC4 Key:<br>
+                <input type="text" name="encryption_key" placeholder="Enter RC4 key">
+            </label><br><br>
+        </div>
+
+        <div id="return_format" style="display:none;">
+            <label>Select Return Format:<br>
+                <select name="return_format">
+                    <option value="binary">Binary</option>
+                    <option value="ascii">ASCII</option>
+                    <option value="hexadecimal">Hexadecimal</option>
+                    <option value="octal">Octal</option>
+                    <option value="decimal">Decimal</option>
+                </select>
+            </label><br><br>
+        </div>
         <input type="submit" name="encrypt_submit" value="Encrypt">
     </form>
 
@@ -218,4 +270,3 @@ echo <<<HTML
 </html>
 HTML;
 ?>
-

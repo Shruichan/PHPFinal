@@ -69,6 +69,11 @@ function encryptWithDoubleTranspose($crypt ,$keyword1, $keyword2, $text){
     }
 }
 
+
+//----------------------------RC4 Implementation-----------------------------------
+
+
+
 function ensureBinary($str) {
     if (preg_match('/^[01]+$/', $str)) {
         return $str; // just return the string if it is already binary
