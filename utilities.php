@@ -60,9 +60,9 @@ function encryptWithSimpleSub($crypt, $shift, $text){
 }
 
 function encryptWithDoubleTranspose($crypt ,$keyword1, $keyword2, $text){
-    //Make keywords into lowercase and an array 
-    $k1 = str_split(strtolower($keyword1));
-    $k2 = str_split(strtolower($keyword2));
+    //Make keywords into lowercase and an array and remove duplicate letters
+    $k1 = array_unique(str_split(strtolower($keyword1)));
+    $k2 = array_unique(str_split(strtolower($keyword2)));
     $result = "";
     //If crypt is 0 then we are encrypting else we are decrypting 
     if($crypt == "encrypt")
