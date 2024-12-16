@@ -240,6 +240,8 @@ echo <<<HTML
         }
         else if(algorithm === "SimpleSub"){
             shift.style.display = "block";
+            returnFormat.style.display = "none";
+            shift.style.display = "none";
         }
          else {
             keyInput.style.display = "none";
