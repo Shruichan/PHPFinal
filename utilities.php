@@ -60,16 +60,64 @@ function encryptWithSimpleSub($crypt, $shift, $text){
 }
 
 function encryptWithDoubleTranspose($crypt ,$keyword1, $keyword2, $text){
+    //Make keywords into lowercase and an array 
+    $k1 = str_split(strtolower($keyword1));
+    $k2 = str_split(strtolower($keyword));
+    $result = "";
     //If crypt is 0 then we are encrypting else we are decrypting 
-    if($crypt == 0)
+    if($crypt == "encrypt")
     {
-        
+        $firstTranspose = transpose($k1, $text);
+        $result = transpose($k2, $firstTranspose);
     }
     else{
-
+        $firstTranspose = reverseTranspose($k1, $text);
+        $result = reverseTranspose($k2, $firstTranspose);
     }
+    return $result;
 }
 
+function transpose($keyword, $text){
+    //Get the size of the grid and split text into array
+    $sortedKey = sort($keyword);
+    $rowCount = intdiv(count($text) + count($keyword) - 1 , count($keyword));
+    $original = str_split(str_replace(' ', '', $text));
+    $result = [];
+    //Begin placing text into a sorted grid
+    $index = 0;
+    for($i = 0; $i < $rowCount; $i++){
+        $temp = [];
+        for($j = 0; $j < $keyword; $j++){
+            if($index >= count($text)){
+                array_push($result, $temp);
+                break;
+            }
+            $keyOrder = array_search($keyword[$j], $sortedKey);
+            $temp[$keyOrder] = $original[$index];
+            $index++;
+        }
+        if($index >= count($text)) break;
+        array_push($result, $temp);
+
+    }
+    $index = 0;
+    $newText = "";
+    foreach ($result as $row) {
+        foreach ($row as $element) {
+            $newText .= $element;  
+            // Add a space every 5 letters
+            if (($index + 1) % 5 == 0 && $index + 1 < count($text)) {
+                $result .= ' ';
+            }
+            $index++;
+        }
+    }
+    return $newText;
+}
+
+function reverseTranspose($keyword, $text){
+
+}
 
 //----------------------------RC4 Implementation-----------------------------------
 
