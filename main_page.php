@@ -238,12 +238,13 @@ echo <<<HTML
             keyInput.style.display = "block";
             returnFormat.style.display = "block";
         }
-        elseif(algorithm === "SimpleSub"){
+        else if(algorithm === "SimpleSub"){
             shift.style.display = "block";
         }
          else {
             keyInput.style.display = "none";
             returnFormat.style.display = "none";
+            shift.style.display = "none";
         }
     }
     //TODO make sure to integrate client side validation VERY IMPORTANT
