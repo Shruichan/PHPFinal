@@ -75,7 +75,7 @@ function ensureBinary($str) {
     } else {
         $bin = ''; //string to store the binary representation
         for ($i = 0; $i < strlen($str); $i++) { // loop over all characters in the string and convert to binary
-            $bin .= str_pad(decbin(ord($str[$i])), 8, '0', STR_PAD_LEFT); // convert character to binary and padd it if not enough
+            $bin .= str_pad(decbin(ord($str[$i])), 8, '0', STR_PAD_LEFT); // convert character to binary and pad it if not enough
         }
         return $bin; // return string after we append all the stuff to it
     }
@@ -83,7 +83,7 @@ function ensureBinary($str) {
 
 function binaryStringToBytes($binaryStr) {
     $len = strlen($binaryStr); // get length
-    if ($len % 8 !== 0) { // if string not multiple of 8 rc4 implementation no work so padd with 0s if so
+    if ($len % 8 !== 0) { // if string not multiple of 8 rc4 implementation no work so pad with 0s if so
         $binaryStr = str_pad($binaryStr, $len + (8 - $len % 8), '0', STR_PAD_RIGHT); // just pad it with 0s if its not in bytes
     }
     $bytes = ''; // string to store bytes
@@ -97,7 +97,7 @@ function binaryStringToBytes($binaryStr) {
 function bytesToBinaryString($bytes) {
     $bin = ''; // var to store binary
     for ($i = 0; $i < strlen($bytes); $i++) {
-        $bin .= str_pad(decbin(ord($bytes[$i])), 8, '0', STR_PAD_LEFT); // convert byte to its binary padd it if not enough and append to string
+        $bin .= str_pad(decbin(ord($bytes[$i])), 8, '0', STR_PAD_LEFT); // convert byte to its binary pad it if not enough and append to string
     }
     return $bin; // return the bytes
 }
@@ -136,7 +136,7 @@ function rc4($keyBytes, $dataBytes) {
         $i = ($i + 1) % 256;
         // update J based on value of S[i]
         $j = ($j + $S[$i]) % 256;
-        // swap s[i] and s[j] (for further randomization im assuming)
+        // swap s[i] and s[j] (for further randomization)
         $temp = $S[$i];
         $S[$i] = $S[$j];
         $S[$j] = $temp;
