@@ -120,6 +120,17 @@ if (isset($_POST['encrypt_submit'])) {
                 }
 
             }
+            elseif($encryption_algorithm === 'SimpleSub'){
+                if(empty($_POST['shift'])){
+                    $query_results = "Simple substition algorithm requires a shift amount."; 
+                }
+                else{
+                    $shift = sanitize($_POST['shift']);
+                }
+            }
+            else{
+
+            }
             // Encrypt the data based on chosen algorithm
             switch ($encryption_algorithm) {
                 case 'RC4':
@@ -134,7 +145,8 @@ if (isset($_POST['encrypt_submit'])) {
                     $encrypted_data = encryptWithSimpleSub(1, "key1", "key2", $original_data);
                     break;
                 case 'SimpleSub':
-                    $encrypted_data = encryptWithDoubleTranspose(1, 2, $original_data);
+                    if(!empty($shift))
+                    $encrypted_data = encryptWithDoubleTranspose(0, $shift, $original_data);
                     break;
                 default:
                     $query_results = "Invalid encryption algorithm.";
@@ -213,10 +225,15 @@ echo <<<HTML
         const algorithm = document.getElementById("encryption_algorithm").value;
         const keyInput = document.getElementById("key_input");
         const returnFormat = document.getElementById("return_format");
+        const shift = document.getElementById("shift_input");
         if (algorithm === "RC4") {
             keyInput.style.display = "block";
             returnFormat.style.display = "block";
-        } else {
+        }
+        elseif(algorithm === "SimpleSub"){
+            shift.style.display = "block";
+        }
+         else {
             keyInput.style.display = "none";
             returnFormat.style.display = "none";
         }
@@ -260,7 +277,14 @@ echo <<<HTML
                 </select>
             </label><br><br>
         </div>
+        <div id="shift_input" style="display:none;">
+            <label>Enter Shift Amount :<br>
+                <input type="number" name="shift" placeholder="Enter shift for cipher">
+            </label><br><br>
+        </div>
+
         <input type="submit" name="encrypt_submit" value="Encrypt">
+        <input type="submit" name="decrypt_submit" value="Decrypt">
     </form>
 
     <form method="post">
