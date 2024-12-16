@@ -22,10 +22,11 @@ function displayError() {
 
 //susbstitution cypher via caesar cipher
 function encryptWithSimpleSub($crypt, $shift, $text){
-    $original = str_split($text);
+    $original = str_split($text); // split text into array of characters
     //Create a dictionary based on how many shifts given by the user
     $alph = array_merge(range('a', 'z'), range('A', 'Z'));
-    $dictionary = array_merge(range('a', 'z'), range('A', 'Z'));
+    $dictionary = array_merge(range('a', 'z'), range('A', 'Z')); // shift alphabet over to get new shifted dictionary
+    // create arrays to store original positions
     $num = range('0', '9');
     $numDict = range('0', '9');
 
@@ -33,15 +34,21 @@ function encryptWithSimpleSub($crypt, $shift, $text){
     {
         // handling encryption case
         for($x = 0; $x < $shift; $x++){ //shift the dictionary right by however many shifts
+            // move last element of dictionary to the front
             array_unshift($dictionary, array_pop($dictionary));
+            // move last element of numdict to front as well
             array_unshift($numDict, array_pop($numDict));
         }
+        //replacing each character of thhe original text with its shifted counterpart
         for($i = 0; $i < count($original); $i++){
             if(in_array($original[$i], $alph)){
+                /* if character is in array, find the original character and replace 
+                    with the corresponding character in dictionary */
                 $index = array_search($original[$i], $alph);
                 $original[$i] = $dictionary[$index];
             }
             if(in_array($original[$i], $numDict)){
+                /* if the character is a digit shift it using the num dict */
                 $index = array_search($original[$i], $num);
                 $original[$i] = $numDict[$index];
             }
@@ -50,21 +57,27 @@ function encryptWithSimpleSub($crypt, $shift, $text){
     else{
         //shift to the left by however many shifts
         for($x = 0; $x < $shift; $x++){
+            // move the first element of dictionary to the end
             array_push($dictionary, array_shift($dictionary));
+            // move the first element of numdict ot the end
             array_push($numDict, array_shift($numDict));
         }
         for($i = 0; $i < count($original); $i++){
             if(in_array($original[$i], $alph)){
+                // if character is a letter find its index
                 $index = array_search($original[$i], $alph);
+                // replace it with the character from the shifted array
                 $original[$i] = $dictionary[$index];
             }
             if(in_array($original[$i], $num)){
+                //if character is a digit find its index
                 $index = array_search($original[$i], $num);
+                // replace it with shifted didget from numdict
                 $original[$i] = $numDict[$index];
             }
         }
     }
-    return implode($original);
+    return implode($original); // join characters back into a string and return them
 }
 
 
