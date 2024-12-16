@@ -131,10 +131,10 @@ if (isset($_POST['encrypt_submit'])) {
                     }
                     break;
                 case 'DoubleTranspose':
-                    $encrypted_data = encryptWithDoubleTranspose(1, 2, $original_data);
+                    $encrypted_data = encryptWithSimpleSub(1, "key1", "key2", $original_data);
                     break;
                 case 'SimpleSub':
-                    $encrypted_data = encryptWithSimpleSub(1, "key1", "key2", $original_data);
+                    $encrypted_data = encryptWithDoubleTranspose(1, 2, $original_data);
                     break;
                 default:
                     $query_results = "Invalid encryption algorithm.";
