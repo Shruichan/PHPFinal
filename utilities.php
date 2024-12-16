@@ -62,43 +62,47 @@ function encryptWithSimpleSub($crypt, $shift, $text){
 function encryptWithDoubleTranspose($crypt ,$keyword1, $keyword2, $text){
     //Make keywords into lowercase and an array 
     $k1 = str_split(strtolower($keyword1));
-    $k2 = str_split(strtolower($keyword));
+    $k2 = str_split(strtolower($keyword2));
     $result = "";
     //If crypt is 0 then we are encrypting else we are decrypting 
     if($crypt == "encrypt")
     {
         $firstTranspose = transpose($k1, $text);
+        //echo "First T: $firstTranspose";
         $result = transpose($k2, $firstTranspose);
     }
     else{
-        $firstTranspose = reverseTranspose($k1, $text);
-        $result = reverseTranspose($k2, $firstTranspose);
+        $firstTranspose = reverseTranspose($k2, $text);
+        //echo "First U: $firstTranspose";
+        $result = reverseTranspose($k1, $firstTranspose);
     }
     return $result;
 }
 
 function transpose($keyword, $text){
     //Get the size of the grid and split text into array
-    $sortedKey = sort($keyword);
-    $rowCount = intdiv(count($text) + count($keyword) - 1 , count($keyword));
+    $oldKey = $keyword;
+    sort($keyword);
     $original = str_split(str_replace(' ', '', $text));
+    $rowCount = intdiv(count($original) + count($keyword) - 1 , count($keyword));
     $result = [];
     //Begin placing text into a sorted grid
     $index = 0;
     for($i = 0; $i < $rowCount; $i++){
         $temp = [];
-        for($j = 0; $j < $keyword; $j++){
-            if($index >= count($text)){
+        for($j = 0; $j < count($keyword); $j++){
+            if($index >= count($original)){
+                ksort($temp);
                 array_push($result, $temp);
                 break;
             }
-            $keyOrder = array_search($keyword[$j], $sortedKey);
+            $keyOrder = array_search($oldKey[$j], $keyword, true);
             $temp[$keyOrder] = $original[$index];
             $index++;
         }
-        if($index >= count($text)) break;
+        if($index >= count($original)) break;
+        ksort($temp);
         array_push($result, $temp);
-
     }
     $index = 0;
     $newText = "";
@@ -106,8 +110,8 @@ function transpose($keyword, $text){
         foreach ($row as $element) {
             $newText .= $element;  
             // Add a space every 5 letters
-            if (($index + 1) % 5 == 0 && $index + 1 < count($text)) {
-                $result .= ' ';
+            if (($index + 1) % 5 == 0 && $index + 1 < count($original)) {
+                $newText .= ' ';
             }
             $index++;
         }
@@ -116,6 +120,42 @@ function transpose($keyword, $text){
 }
 
 function reverseTranspose($keyword, $text){
+    //Get the size of the grid and split text into array
+    $oldKey = $keyword;
+    sort($keyword);
+    $original = str_split(str_replace(' ', '', $text));
+    $rowCount = intdiv(count($original) + count($keyword) - 1 , count($keyword));
+    $result = [];
+
+    //Begin placing text into a sorted grid
+    $index = 0;
+    for($i = 0; $i < $rowCount; $i++){
+        $temp = [];
+        for($j = 0; $j < count($keyword); $j++){
+            if($index >= count($original)){
+                array_push($result, $temp);
+                break;
+            }
+            $keyOrder = array_search($keyword[$j], $oldKey, true);
+            $temp[$keyOrder] = $original[$index];
+            $index++;
+        }
+        if($index >= count($original)) break;
+        array_push($result, $temp);
+    }
+    $index = 0;
+    $newText = "";
+    foreach ($result as $row) {
+        foreach ($row as $element) {
+            $newText .= $element;  
+            // Add a space every 5 letters
+            if (($index + 1) % 5 == 0 && $index + 1 < count($original)) {
+                $newText .= ' ';
+            }
+            $index++;
+        }
+    }
+    return $newText;
 
 }
 
