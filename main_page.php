@@ -106,7 +106,7 @@ if (isset($_POST['encrypt_submit'])) {
             // Encrypt the data based on chosen algorithm
             switch ($encryption_algorithm) {
                 case 'RC4':
-                    $encrypted_data = encryptWithRC4(1, "key", $original_data);
+                    $encrypted_data = encryptWithRC4("key", $original_data);
                     break;
                 case 'DoubleTranspose':
                     $encrypted_data = encryptWithDoubleTranspose(1, 2, $original_data);

@@ -69,99 +69,105 @@ function encryptWithDoubleTranspose($crypt ,$keyword1, $keyword2, $text){
     }
 }
 
-// need to make sure that strings are binary
 function ensureBinary($str) {
-    // check if user already provided binary so we can just ignore and continue onwards
     if (preg_match('/^[01]+$/', $str)) {
-        // Already binary
-        return $str;
+        return $str; // just return the string if it is already binary
     } else {
-        // convert text to binary if not binary
-        $bin = '';
-        for ($i = 0; $i < strlen($str); $i++) {
-            $bin .= str_pad(decbin(ord($str[$i])), 8, '0', STR_PAD_LEFT);
+        $bin = ''; //string to store the binary representation
+        for ($i = 0; $i < strlen($str); $i++) { // loop over all characters in the string and convert to binary
+            $bin .= str_pad(decbin(ord($str[$i])), 8, '0', STR_PAD_LEFT); // convert character to binary and padd it if not enough
         }
-        return $bin;
+        return $bin; // return string after we append all the stuff to it
     }
 }
 
-
-function encryptWithRC4($crypt, $key, $data){
-    // $crypt: 0 is encrypt and 1 is decrypt
-    $n = 3; // num bits we look at at a tim
-    $key = ensureBinary($key);
-    $data = ensureBinary($data);
-
-    $pt = [];
-    for ($i = 0; $i < strlen($data); $i += $n) {
-        $chunk = substr($data, $i, $n);
-        $pt[] = bindec($chunk);
+function binaryStringToBytes($binaryStr) {
+    $len = strlen($binaryStr); // get length
+    if ($len % 8 !== 0) { // if string not multiple of 8 rc4 implementation no work so padd with 0s if so
+        $binaryStr = str_pad($binaryStr, $len + (8 - $len % 8), '0', STR_PAD_RIGHT); // just pad it with 0s if its not in bytes
     }
-
-    $key_list = [];
-    for ($i = 0; $i < strlen($key); $i += $n) {
-        $chunk = substr($key, $i, $n);
-        $key_list[] = bindec($chunk);
+    $bytes = ''; // string to store bytes
+    for ($i = 0; $i < $len; $i += 8) { //loop every 8
+        $byteBits = substr($binaryStr, $i, 8); // get the substring
+        $bytes .= chr(bindec($byteBits)); // convert it to byte character
     }
+    return $bytes; // return in bytes
+}
 
-    // Initialize state vector S
-    $S = [];
-    for ($i = 0; $i < (1 << $n); $i++) {
-        $S[$i] = $i;
+function bytesToBinaryString($bytes) {
+    $bin = ''; // var to store binary
+    for ($i = 0; $i < strlen($bytes); $i++) {
+        $bin .= str_pad(decbin(ord($bytes[$i])), 8, '0', STR_PAD_LEFT); // convert byte to its binary padd it if not enough and append to string
     }
-
-    // Extend key_list if shorter than S
-    $diff = count($S) - count($key_list);
-    if ($diff > 0) {
-        for ($i = 0; $i < $diff; $i++) {
-            $key_list[] = $key_list[$i];
-        }
-    }
+    return $bin; // return the bytes
+}
 
 
+// this implementation referenced the pseudocode found on dcode (https://www.dcode.fr/rc4-cipher)
+function rc4($keyBytes, $dataBytes) {
+    //------------------------------ Key Scheduling Algorithm (KSA)
 
-    // KSA (Key Scheduling Algorithm)
-    $j = 0;
-    $N = count($S);
-    for ($i = 0; $i < $N; $i++) {
-        $j = ($j + $S[$i] + $key_list[$i]) % $N;
-        // Swap S[i] and S[j]
+    $keyLength = strlen($keyBytes); // get key length in bytes
+    // initialize the state vector with a range of 0->255
+    $S = range(0, 255);
+    $j = 0; // index variable for the KSA
+
+    // perform the initial permuation of S running loop 256 times once for each value in s
+    for ($i = 0; $i < 256; $i++) {
+        // get new value of index J based on current value of S, the key and some modulus to make sure it stays in bounds
+        $j = ($j + $S[$i] + ord($keyBytes[$i % $keyLength])) % 256;
+        //swap values of s[i] and s[j]
         $temp = $S[$i];
         $S[$i] = $S[$j];
         $S[$j] = $temp;
     }
 
-    // PRGA (Pseudo-Random Generation Algorithm)
+
+    //------------------------ Pseudo Random Generation Algorithm (PRGA)
+
+    // initialize the indexes used for generating the keystream
     $i = 0;
     $j = 0;
-    $key_stream = [];
-    for ($k = 0; $k < count($pt); $k++) {
-        $i = ($i + 1) % $N;
-        $j = ($j + $S[$i]) % $N;
+    $output = ''; // empty string to store output
+
+    //process every byte of the input data
+    for ($n = 0; $n < strlen($dataBytes); $n++) {
+        // increment i and let it loop back around using modulus
+        $i = ($i + 1) % 256;
+        // update J based on value of S[i]
+        $j = ($j + $S[$i]) % 256;
+        // swap s[i] and s[j] (for further randomization im assuming)
         $temp = $S[$i];
         $S[$i] = $S[$j];
         $S[$j] = $temp;
 
-        $t = ($S[$i] + $S[$j]) % $N;
-        $key_stream[] = $S[$t];
+        // get the keydtream value by adding s[i] and s[j]
+        // use the result as an index for state vector
+        $K = $S[($S[$i] + $S[$j]) % 256];
+        // XOR the current data byte with keystream value 
+        $output .= chr(ord($dataBytes[$n]) ^ $K); // chr converts rusult back into character
     }
-
-
-    $result = [];
-    for ($idx = 0; $idx < count($pt); $idx++) {
-        $c = $pt[$idx] ^ $key_stream[$idx];
-        $result[] = $c;
-    }
-
-    $output = "";
-    foreach ($result as $val) {
-        $binVal = decbin($val);
-        // Pad with leading zeros to make it $n bits
-        $binVal = str_pad($binVal, $n, "0", STR_PAD_LEFT);
-        $output .= $binVal;
-    }
-
+    //return result, rc4 is the same both ways so no need to differentiate between encryption and decryption
     return $output;
+}
+
+function encryptWithRC4($key, $data) {
+    // make sure key and data are binary
+    $binaryKey = ensureBinary($key);
+    $binaryData = ensureBinary($data);
+    
+    // convert them into bytes
+    $keyBytes = binaryStringToBytes($binaryKey);
+    $dataBytes = binaryStringToBytes($binaryData);
+
+    // perform rc4 and return the resultant bytes
+    $resultBytes = rc4($keyBytes, $dataBytes);
+
+    //convert bytes back into binary and return them 
+    $resultBinary = bytesToBinaryString($resultBytes);
+    return $resultBinary;
+
+    //todo maybe return both bytes and character output
 }
 
 ?>
