@@ -206,63 +206,35 @@ echo <<<HTML
         alert(errors.join("\\n"));
     }
 
-    function validateSearchForm(form) {
-        // user $ function to get information from form
-        let student_name = $('student_name').value.trim();
-        let student_id = $('student_id').value.trim();
-
-        let errors = []; // create errors var to store errors
-
-        // check for user input errors and store them if they occur for later display
-        if (student_name === ""){
-            errors.push("Student name is required.");// tell user name needs to exist
-        }
-
-        if (!/^[0-9]{9}$/.test(student_id)) {
-            errors.push("Student ID must be exactly 9 digits."); // tell user proper id format
-        }
-
-        if (errors.length > 0) {
-            displayErrors(errors);
-            return false;
-        }
-        
-        return true; // return true and let us proceed otherwise
-    }
-
     function validateEncryptionForm(form) {
         let errors = [];
         
-        let text_data = \$('text_data').value.trim();
-        let file_data = \$('file_data').value.trim();
-        let algorithm = \$('encryption_algorithm').value;
+        let text_data = $('text_data').value.trim();
+        let file_data = $('file_data').value.trim();
+        let algorithm = $('encryption_algorithm').value;
         let encrypt_decrypt = form.encrypt_decrypt.value;
-
-        // At least one of text_data or file_data must be provided
         if (text_data === "" && file_data === "") {
             errors.push("Please provide text data or upload a file.");
         }
-
-        // Check fields depending on algorithm
         if (algorithm === "RC4") {
-            let key = \$('encryption_key').value.trim();
+            let key = $('encryption_key').value.trim();
             if (key === "") {
                 errors.push("RC4 requires a key.");
             }
-            let return_format = \$('return_format_select').value;
+            let return_format = $('return_format_select').value;
             if (!["binary", "ascii", "hexadecimal", "octal", "decimal"].includes(return_format)) {
                 errors.push("Invalid return format selected for RC4.");
             }
         } else if (algorithm === "SimpleSub") {
-            let shiftVal = \$('shift').value.trim();
+            let shiftVal = $('shift').value.trim();
             if (shiftVal === "") {
                 errors.push("Simple Substitution requires a shift amount.");
             } else if (isNaN(shiftVal)) {
                 errors.push("Shift must be a number.");
             }
         } else if (algorithm === "DoubleTranspose") {
-            let key1Val = \$('key1').value.trim();
-            let key2Val = \$('key2').value.trim();
+            let key1Val = $('key1').value.trim();
+            let key2Val = $('key2').value.trim();
             if (key1Val === "" || key2Val === "") {
                 errors.push("Double Transposition requires both Key 1 and Key 2.");
             }
@@ -277,18 +249,17 @@ echo <<<HTML
     }
 
     function toggleKeyInput() {
-        const algorithm = \$('encryption_algorithm').value;
-        const keyInput = \$('key_input');
-        const doubleTransposeKeys = \$('double_transpose_keys');
-        const returnFormat = \$('return_format');
-        const shiftInput = \$('shift_input');
+        const algorithm = $('encryption_algorithm').value;
+        const keyInput = $('key_input');
+        const doubleTransposeKeys = $('double_transpose_keys');
+        const returnFormat = $('return_format');
+        const shiftInput = $('shift_input');
 
-        // Reset all requirements first
-        \$('encryption_key').required = false;
-        \$('return_format_select').required = false;
-        \$('shift').required = false;
-        \$('key1').required = false;
-        \$('key2').required = false;
+        $('encryption_key').required = false;
+        $('return_format_select').required = false;
+        $('shift').required = false;
+        $('key1').required = false;
+        $('key2').required = false;
 
         if (algorithm === "RC4") {
             keyInput.style.display = "block";
@@ -296,8 +267,8 @@ echo <<<HTML
             shiftInput.style.display = "none";
             doubleTransposeKeys.style.display = "none";
 
-            \$('encryption_key').required = true;
-            \$('return_format_select').required = true;
+            $('encryption_key').required = true;
+            $('return_format_select').required = true;
 
         } else if (algorithm === "SimpleSub") {
             shiftInput.style.display = "block";
@@ -305,7 +276,7 @@ echo <<<HTML
             keyInput.style.display = "none";
             doubleTransposeKeys.style.display = "none";
 
-            \$('shift').required = true;
+            $('shift').required = true;
 
         } else if (algorithm === "DoubleTranspose") {
             doubleTransposeKeys.style.display = "block";
@@ -313,8 +284,8 @@ echo <<<HTML
             shiftInput.style.display = "none";
             returnFormat.style.display = "none";
 
-            \$('key1').required = true;
-            \$('key2').required = true;
+            $('key1').required = true;
+            $('key2').required = true;
 
         } else {
             keyInput.style.display = "none";
