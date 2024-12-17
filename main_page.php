@@ -170,7 +170,7 @@ if (isset($_POST['encrypt_submit'])) {
                 $inserted_id = $conn->insert_id;
 
                 // Display the data
-                $safe_encrypted_data = sanitize($encrypted_data, ENT_QUOTES, 'UTF-8');
+                $safe_encrypted_data = sanitize($encrypted_data);
                 $query_results = "Data encrypted and stored successfully.<br>
                                   <strong>Encrypted Data:</strong><br>
                                   <pre>{$safe_encrypted_data}</pre>";
