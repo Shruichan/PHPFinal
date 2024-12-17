@@ -138,7 +138,7 @@ if (isset($_POST['encrypt_submit'])) {
                     $key2 = sanitize($_POST['key2']);
                 }
             }else{
-
+                
             }
             // Encrypt/Decrypt the data based on chosen algorithm
             switch ($encryption_algorithm) {
@@ -230,72 +230,135 @@ echo <<<HTML
         return true; // return true and let us proceed otherwise
     }
 
-    function toggleKeyInput() {
-    const algorithm = $('encryption_algorithm').value;
-    const keyInput = $('key_input');
-    const doubleTransposeKeys = $('double_transpose_keys');
-    const returnFormat = $('return_format');
-    const shift = $('shift_input');
-    if (algorithm === "RC4") {
-        keyInput.style.display = "block";
-        returnFormat.style.display = "block";
-        shift.style.display = "none";
-        doubleTransposeKeys.style.display = "none";
-    } else if (algorithm === "SimpleSub") {
-        shift.style.display = "block";
-        returnFormat.style.display = "none";
-        keyInput.style.display = "none";
-        doubleTransposeKeys.style.display = "none";
-    } else if (algorithm === "DoubleTranspose") {
-        doubleTransposeKeys.style.display = "block";
-        keyInput.style.display = "none";
-        shift.style.display = "none";
-        returnFormat.style.display = "none";
-    } else {
-        keyInput.style.display = "none";
-        returnFormat.style.display = "none";
-        shift.style.display = "none";
-        doubleTransposeKeys.style.display = "none";
+    function validateEncryptionForm(form) {
+        let errors = [];
+        
+        let text_data = \$('text_data').value.trim();
+        let file_data = \$('file_data').value.trim();
+        let algorithm = \$('encryption_algorithm').value;
+        let encrypt_decrypt = form.encrypt_decrypt.value;
+
+        // At least one of text_data or file_data must be provided
+        if (text_data === "" && file_data === "") {
+            errors.push("Please provide text data or upload a file.");
+        }
+
+        // Check fields depending on algorithm
+        if (algorithm === "RC4") {
+            let key = \$('encryption_key').value.trim();
+            if (key === "") {
+                errors.push("RC4 requires a key.");
+            }
+            let return_format = \$('return_format_select').value;
+            if (!["binary", "ascii", "hexadecimal", "octal", "decimal"].includes(return_format)) {
+                errors.push("Invalid return format selected for RC4.");
+            }
+        } else if (algorithm === "SimpleSub") {
+            let shiftVal = \$('shift').value.trim();
+            if (shiftVal === "") {
+                errors.push("Simple Substitution requires a shift amount.");
+            } else if (isNaN(shiftVal)) {
+                errors.push("Shift must be a number.");
+            }
+        } else if (algorithm === "DoubleTranspose") {
+            let key1Val = \$('key1').value.trim();
+            let key2Val = \$('key2').value.trim();
+            if (key1Val === "" || key2Val === "") {
+                errors.push("Double Transposition requires both Key 1 and Key 2.");
+            }
+        }
+
+        if (errors.length > 0) {
+            displayErrors(errors);
+            return false;
+        }
+
+        return true;
     }
 
-}
-    //TODO make sure to integrate client side validation VERY IMPORTANT
-    </script>
+    function toggleKeyInput() {
+        const algorithm = \$('encryption_algorithm').value;
+        const keyInput = \$('key_input');
+        const doubleTransposeKeys = \$('double_transpose_keys');
+        const returnFormat = \$('return_format');
+        const shiftInput = \$('shift_input');
 
+        // Reset all requirements first
+        \$('encryption_key').required = false;
+        \$('return_format_select').required = false;
+        \$('shift').required = false;
+        \$('key1').required = false;
+        \$('key2').required = false;
+
+        if (algorithm === "RC4") {
+            keyInput.style.display = "block";
+            returnFormat.style.display = "block";
+            shiftInput.style.display = "none";
+            doubleTransposeKeys.style.display = "none";
+
+            \$('encryption_key').required = true;
+            \$('return_format_select').required = true;
+
+        } else if (algorithm === "SimpleSub") {
+            shiftInput.style.display = "block";
+            returnFormat.style.display = "none";
+            keyInput.style.display = "none";
+            doubleTransposeKeys.style.display = "none";
+
+            \$('shift').required = true;
+
+        } else if (algorithm === "DoubleTranspose") {
+            doubleTransposeKeys.style.display = "block";
+            keyInput.style.display = "none";
+            shiftInput.style.display = "none";
+            returnFormat.style.display = "none";
+
+            \$('key1').required = true;
+            \$('key2').required = true;
+
+        } else {
+            keyInput.style.display = "none";
+            returnFormat.style.display = "none";
+            shiftInput.style.display = "none";
+            doubleTransposeKeys.style.display = "none";
+        }
+    }
+    </script>
 </head>
 <body onload="toggleKeyInput()">
     <h1>Encryptotron9000</h1>
     <p>{$query_results}</p>
-    <form method="post" enctype="multipart/form-data">
+    <form method="post" enctype="multipart/form-data" onsubmit="return validateEncryptionForm(this);" novalidate>
         <h2>Encrypt Your Data</h2>
         <label>Enter text data (optional):<br>
-            <textarea name="text_data" rows="5" cols="40"></textarea>
+            <textarea name="text_data" id="text_data" rows="5" cols="40"></textarea>
         </label><br><br>
         <label>Or upload a file (optional):<br>
-            <input type="file" name="file_data">
+            <input type="file" name="file_data" id="file_data">
         </label><br><br>
         <label>Select Encryption Algorithm:<br>
-            <select name="encryption_algorithm" id="encryption_algorithm" onchange="toggleKeyInput()">
+            <select name="encryption_algorithm" id="encryption_algorithm" required onchange="toggleKeyInput()">
                 <option value="RC4">RC4</option>
                 <option value="DoubleTranspose">Double Transposition</option>
                 <option value="SimpleSub">Simple Substitution</option>
             </select>
         </label><br><br>
         <label>Select Encrypt or Decrypt:<br>
-            <select name="encrypt_decrypt">
+            <select name="encrypt_decrypt" required>
                 <option value="encrypt">Encrypt</option>
                 <option value="decrypt">Decrypt</option>
             </select>
         </label><br><br>
+
         <div id="key_input" style="display:none;">
             <label>Enter RC4 Key:<br>
-                <input type="text" name="encryption_key" placeholder="Enter RC4 key">
+                <input type="text" name="encryption_key" id="encryption_key" placeholder="Enter RC4 key">
             </label><br><br>
         </div>
 
         <div id="return_format" style="display:none;">
             <label>Select Return Format:<br>
-                <select name="return_format">
+                <select name="return_format" id="return_format_select">
                     <option value="binary">Binary</option>
                     <option value="ascii">ASCII</option>
                     <option value="hexadecimal">Hexadecimal</option>
@@ -305,21 +368,18 @@ echo <<<HTML
             </label><br><br>
         </div>
 
-
         <div id="double_transpose_keys" style="display:none;">
             <label>Enter Key 1:<br>
-                <input type="text" name="key1" placeholder="Enter first key">
+                <input type="text" name="key1" id="key1" placeholder="Enter first key">
             </label><br><br>
             <label>Enter Key 2:<br>
-                <input type="text" name="key2" placeholder="Enter second key">
+                <input type="text" name="key2" id="key2" placeholder="Enter second key">
             </label><br><br>
         </div>
 
-
-        
         <div id="shift_input" style="display:none;">
             <label>Enter Shift Amount :<br>
-                <input type="number" name="shift" placeholder="Enter shift for cipher">
+                <input type="number" name="shift" id="shift" placeholder="Enter shift for cipher">
             </label><br><br>
         </div>
 
