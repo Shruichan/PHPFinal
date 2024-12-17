@@ -130,7 +130,14 @@ if (isset($_POST['encrypt_submit'])) {
                     $shift = sanitize($_POST['shift']);
                 }
             }
-            else{
+            elseif ($encryption_algorithm === 'DoubleTranspose') {
+                if (empty($_POST['key1']) || empty($_POST['key2'])) {
+                    $query_results = "Double Transposition requires both Key 1 and Key 2.";
+                } else {
+                    $key1 = sanitize($_POST['key1']);
+                    $key2 = sanitize($_POST['key2']);
+                }
+            }else{
 
             }
             // Encrypt/Decrypt the data based on chosen algorithm
@@ -224,25 +231,34 @@ echo <<<HTML
     }
 
     function toggleKeyInput() {
-        const algorithm = document.getElementById("encryption_algorithm").value;
-        const keyInput = document.getElementById("key_input");
-        const returnFormat = document.getElementById("return_format");
-        const shift = document.getElementById("shift_input");
-        if (algorithm === "RC4") {
-            keyInput.style.display = "block";
-            returnFormat.style.display = "block";
-        }
-        else if(algorithm === "SimpleSub"){
-            shift.style.display = "block";
-            returnFormat.style.display = "none";
-            keyInput.style.display = "none";
-        }
-         else {
-            keyInput.style.display = "none";
-            returnFormat.style.display = "none";
-            shift.style.display = "none";
-        }
+    const algorithm = $('encryption_algorithm').value;
+    const keyInput = $('key_input');
+    const doubleTransposeKeys = $('double_transpose_keys');
+    const returnFormat = $('return_format');
+    const shift = $('shift_input');
+    if (algorithm === "RC4") {
+        keyInput.style.display = "block";
+        returnFormat.style.display = "block";
+        shift.style.display = "none";
+        doubleTransposeKeys.style.display = "none";
+    } else if (algorithm === "SimpleSub") {
+        shift.style.display = "block";
+        returnFormat.style.display = "none";
+        keyInput.style.display = "none";
+        doubleTransposeKeys.style.display = "none";
+    } else if (algorithm === "DoubleTranspose") {
+        doubleTransposeKeys.style.display = "block";
+        keyInput.style.display = "none";
+        shift.style.display = "none";
+        returnFormat.style.display = "none";
+    } else {
+        keyInput.style.display = "none";
+        returnFormat.style.display = "none";
+        shift.style.display = "none";
+        doubleTransposeKeys.style.display = "none";
     }
+
+}
     //TODO make sure to integrate client side validation VERY IMPORTANT
     </script>
 
@@ -288,6 +304,19 @@ echo <<<HTML
                 </select>
             </label><br><br>
         </div>
+
+
+        <div id="double_transpose_keys" style="display:none;">
+            <label>Enter Key 1:<br>
+                <input type="text" name="key1" placeholder="Enter first key">
+            </label><br><br>
+            <label>Enter Key 2:<br>
+                <input type="text" name="key2" placeholder="Enter second key">
+            </label><br><br>
+        </div>
+
+
+        
         <div id="shift_input" style="display:none;">
             <label>Enter Shift Amount :<br>
                 <input type="number" name="shift" placeholder="Enter shift for cipher">
