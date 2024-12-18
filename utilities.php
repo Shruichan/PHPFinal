@@ -85,9 +85,27 @@ function encryptWithSimpleSub($crypt, $shift, $text){
 
 
 function encryptWithDoubleTranspose($crypt ,$keyword1, $keyword2, $text){
-    //Make keywords into lowercase and an array and remove duplicate letters
-    $k1 = array_unique(str_split(strtolower($keyword1)));
-    $k2 = array_unique(str_split(strtolower($keyword2)));
+    //Make keywords into lowercase and an array and distinguish any duplicate letters
+    $k1 = str_split(strtolower($keyword1));
+    $k2 = str_split(strtolower($keyword2));
+    //Create list of duplicate letters for each one only needing the key number
+    $u1 = array_keys(array_diff_assoc($k1, array_unique($k1)));
+    $u2 = array_keys(array_diff_assoc($k2, array_unique($k2)));
+    //Check if each keyword has duplicate letters
+    if(count($u1) > 0)
+    {
+        //For each duplicate append its key number to the end.
+        foreach($u1 as $num){
+            $k1[$num] .= $num; 
+        }
+    }
+    if(count($u2) > 0)
+    {
+        //For each duplicate append its key number to the end.
+        foreach($u2 as $num){
+            $k2[$num] .= $num; 
+        }
+    }
 
     // empty string to store the final result
     $result = "";
@@ -181,6 +199,7 @@ function reverseTranspose($keyword, $text){
         for($j = 0; $j < count($keyword); $j++){
             // if all characters have been placed finalize the row and exit
             if($index >= count($original)){
+                ksort($temp); // sort row according to keyword column
                 array_push($result, $temp);
                 break;
             }
@@ -197,6 +216,10 @@ function reverseTranspose($keyword, $text){
 
         // stop filling rows if we get to the end of the text
         if($index >= count($original)) break;
+
+        // sort the row according to transposition order
+        ksort($temp);
+        
         // add the row to the grid
         array_push($result, $temp);
     }
