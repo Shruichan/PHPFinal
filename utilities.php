@@ -170,15 +170,18 @@ function transpose($keyword, $text){
     }
     $index = 0; // track the character positions to add apaces
     $newText = "";
-    foreach ($result as $row) {
-        foreach ($row as $element) {
-            $newText .= $element;  // add character to final result
+    for ($col = 0; $col < count($result[0]); $col++) {
+        for ($row = 0; $row < count($result); $row++) {
+            if(!isset($result[$row][$col])) break; // check if last row has incomplete section
+            $newText .= $result[$row][$col];  // add character to final result
             // Add a space every 5 letters
             if (($index + 1) % 5 == 0 && $index + 1 < count($original)) {
                 $newText .= ' ';
             }
             $index++;
+            if($index >= count($original)) break; //Stop going through result if there are no more characters
         }
+        if($index >= count($original)) break; //Stop going through result if there are no more characters
     }
     return $newText; // return transposed text as a single string
 }
