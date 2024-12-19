@@ -187,44 +187,32 @@ function transpose($keyword, $text){
 }
 
 function reverseTranspose($keyword, $text){
-    $oldKey = $keyword; // store original order of keyword
+    $oldKey = $keyword; // store original order of keywords
     sort($keyword); // sort keyword alphabetically
     $original = str_split(str_replace(' ', '', $text)); // remove spaces from text and split it into array of chars
     $rowCount = intdiv(count($original) + count($keyword) - 1 , count($keyword)); // calculate num rows
-    $result = []; // array to store result of transposition
+    $blocked = (count($keyword) * $rowCount) - count($original); //how many of the last row will be blocked off
+    $result = array_fill(0, $rowCount, array_fill(0, count($keyword), "")); // make array with the correct number of rows and columns
 
     //Begin placing text into a sorted grid
     $index = 0; // track current character position in text
-    for($i = 0; $i < $rowCount; $i++){
-        $temp = []; // remp array to store a row of the grid
-
-        // fill row column by column using keyword order for position
-        for($j = 0; $j < count($keyword); $j++){
-            // if all characters have been placed finalize the row and exit
-            if($index >= count($original)){
-                ksort($temp); // sort row according to keyword column
-                array_push($result, $temp);
-                break;
-            }
-
-            //determine column index for the character using reverse of keywords order
+    // Go column by column filling in the grid
+    for($j = 0; $j < count($keyword); $j++){
+        for($i = 0 ;$i < $rowCount; $i++){
+            // get column index for the character using keywords original order
             $keyOrder = array_search($keyword[$j], $oldKey, true);
 
-            // put charcter in calculated colum position
-            $temp[$keyOrder] = $original[$index];
+            // Check if the column is the one that is needed to be blocked on the last row
+            if($keyOrder > $blocked && $i === $rowCount - 1) break;
 
-            // move on to next character
+            // Place the character in the correct column and row
+            $result[$i][$keyOrder] = $original[$index];
+           
+            // Move to next character
             $index++;
+            if($index >= count($original)) break; //Stop adding to result if no more characters
         }
-
-        // stop filling rows if we get to the end of the text
-        if($index >= count($original)) break;
-
-        // sort the row according to transposition order
-        ksort($temp);
-        
-        // add the row to the grid
-        array_push($result, $temp);
+        if($index >= count($original)) break; //Stop going through result if there are no more characters
     }
 
     $index = 0; // track position to add spaces
@@ -237,7 +225,9 @@ function reverseTranspose($keyword, $text){
                 $newText .= ' ';
             }
             $index++;
+            if($index >= count($original)) break; //Stop going through result if there are no more characters
         }
+        if($index >= count($original)) break; //Stop going through result if there are no more characters
     }
     return $newText; // return reverse transposed text as a single string
 }
