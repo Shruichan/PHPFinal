@@ -213,8 +213,19 @@ echo <<<HTML
         let file_data = $('file_data').value.trim();
         let algorithm = $('encryption_algorithm').value;
         let encrypt_decrypt = form.encrypt_decrypt.value;
-        if (text_data === "" && file_data === "") {
+        let data_used_length = 0;
+        if (text_data !== "" && file_data !== "") {
+            errors.push("Please provide either text data OR upload a file, not both.");
+        } else if (text_data === "" && file_data === "") {
             errors.push("Please provide text data or upload a file.");
+        } else {
+            if (text_data !== "") {
+                data_used = text_data;
+                data_used_length = text_data.length;
+            } else {
+                data_used = file_data;
+                data_used_length = file_data.length;
+            }
         }
         if (algorithm === "RC4") {
             let key = $('encryption_key').value.trim();
@@ -237,6 +248,9 @@ echo <<<HTML
             let key2Val = $('key2').value.trim();
             if (key1Val === "" || key2Val === "") {
                 errors.push("Double Transposition requires both Key 1 and Key 2.");
+            }
+            if (key1Val.length > data_used_length || key2Val.length > data_used_length) {
+                errors.push("Keys cannot be longer than the text.");
             }
         }
 
