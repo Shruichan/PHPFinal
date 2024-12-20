@@ -1,0 +1,15 @@
+CREATE TABLE IF NOT EXISTS credentials (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(255) NOT NULL,
+    password VARCHAR(255) NOT NULL
+);
+CREATE TABLE IF NOT EXISTS encrypted_data (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT UNSIGNED NOT NULL,
+    original_data MEDIUMTEXT NOT NULL,
+    encrypted_data MEDIUMTEXT NOT NULL,
+    algorithm VARCHAR(255) NOT NULL,
+    filename VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES credentials(id)
+);
