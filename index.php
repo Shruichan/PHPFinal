@@ -129,10 +129,10 @@ if (isset($_POST['login'])) { // check to see if login form was submitted
                 }
                 exit();
             } else {
-                echo "Username or Password.";
+                echo "Wrong Username or Password.";
             }
         } else {
-            echo "Username or Password.";
+            echo "Wrong Username or Password.";
         }
         $stmt->close();
     } catch(Exception $e) {
