@@ -203,7 +203,7 @@ function reverseTranspose($keyword, $text){
             $keyOrder = array_search($keyword[$j], $oldKey, true);
 
             // Check if the column is the one that is needed to be blocked on the last row
-            if($keyOrder > $blocked && $i === $rowCount - 1) break;
+            if($keyOrder > count($keyword) - $blocked - 1 && $i === $rowCount - 1) break;
 
             // Place the character in the correct column and row
             $result[$i][$keyOrder] = $original[$index];
